@@ -116,7 +116,7 @@ class ARFF(object):
         return np.array(tuples, dtype=dtypes)
 
     @staticmethod
-    def to_file(file_name, data):
+    def write(file_name, data):
         '''
         Writes ARFF data dictionary to file.
         :param file_name: File name
@@ -128,7 +128,7 @@ class ARFF(object):
         f.close()
 
     @staticmethod
-    def to_csv(file_name, data):
+    def write_csv(file_name, data):
         '''
         Writes ARFF data dictionary to CSV file. Note that this will
         cause loss of attribute type information.
@@ -374,3 +374,11 @@ class ARFF(object):
         for i in range(len(data)):
             if not len(attributes) == len(data[i]):
                 raise RuntimeError('Number of attributes != number items row ' + str(i))
+
+
+
+
+
+
+
+
