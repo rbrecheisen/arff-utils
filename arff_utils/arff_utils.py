@@ -29,10 +29,9 @@ class ARFF(object):
                     elif type(missing) is list:
                         for m in missing:
                             if data['data'][i][j] == m:
-                                data['data'][i][j] = None
-                                break
+                                data['data'][i][j] = None                                
                     else:
-                        raise RuntimeError('Invalid type missing parameter ' + str(type(missing)))
+                        raise RuntimeError('Invalid type for \'missing\' parameter ' + str(type(missing)))
         return data
 
     @staticmethod
