@@ -28,4 +28,5 @@ docs/readme.rst
 docs/usage.rst
 tests/__init__.py
 tests/test_arff_utils.py
-tests/data/data.arff
+tests/data/iris.arff
+tests/data/labor.arff
