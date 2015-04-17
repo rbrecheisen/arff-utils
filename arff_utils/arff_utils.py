@@ -9,22 +9,32 @@ import pandas as pd
 class ARFF(object):
 
     @staticmethod
-    def read(file_name):
-        '''
-        Loads ARFF file into data dictionary.
+    def read(file_name, missing='?'):
+        """
+        Loads ARFF file into data dictionary. Missing values indicated
+        by '?' are automatically converted to None. If you want some
+        other value to be treated as missing, specify them in the
+        missing parameter.
         :param file_name: File name
+        :param missing: Missing value expression
         :return: Data dictionary
-        '''
-        return arff.load(open(file_name))
+        """
+        data = arff.load(open(file_name))
+        if not missing == '?':
+            for i in range(len(data['data'])):
+                for j in range(len(data['data'][i])):
+                    if data['data'][i][j] == missing:
+                        data['data'][i][j] = None
+        return data
 
     @staticmethod
     def to_data_frame(data, index_col=None):
-        '''
+        """
         Converts ARFF data dictionary to Pandas data frame.
         :param data: Data dictionary
         :param index_col: Column name to use as index
         :return: Data frame
-        '''
+        """
         # Create data frame by converting first to Numpy array
         data_array = ARFF.to_numpy(data)
         data_frame = pd.DataFrame(data_array)
@@ -39,7 +49,7 @@ class ARFF(object):
 
     @staticmethod
     def from_data_frame(relation, attributes, data_frame, description=''):
-        '''
+        """
         Converts Pandas data frame to ARFF dictionary. This is only possible
         if the data frame was previously converted from ARFF data because we
         need the specific attribute information.
@@ -48,7 +58,7 @@ class ARFF(object):
         :param data_frame: Data frame
         :param description: Optional description
         :return: ARFF data dictionary
-        '''
+        """
         data = []
         for row in data_frame.to_records(index=False):
             data.append(list(row))
@@ -57,11 +67,11 @@ class ARFF(object):
 
     @staticmethod
     def to_numpy(data):
-        '''
+        """
         Converts ARFF data dictionary to structured numpy array.
         :param data: Data dictionary
         :return: Numpy structured array
-        '''
+        """
         dtypes = []
         attributes = data['attributes']
 
@@ -120,30 +130,30 @@ class ARFF(object):
 
     @staticmethod
     def write(file_name, data):
-        '''
+        """
         Writes ARFF data dictionary to file.
         :param file_name: File name
         :param data: Data dictionary
         :return:
-        '''
+        """
         f = open(file_name, 'w')
         arff.dump(data, f)
         f.close()
 
     @staticmethod
     def write_csv(file_name, data):
-        '''
+        """
         Writes ARFF data dictionary to CSV file. Note that this will
         cause loss of attribute type information.
         :param file_name: CSV file name
         :param data: Data dictionary
         :return:
-        '''
+        """
         raise RuntimeError('Not implemented yet')
 
     @staticmethod
     def create(relation, attributes, data, description=''):
-        '''
+        """
         Creates new ARFF data dictionary from given parameters. Note that
         string values will be automatically converted to Unicode
         :param relation: Relation
@@ -151,7 +161,7 @@ class ARFF(object):
         :param data: Data rows
         :param description: Optional description
         :return: New data dictionary
-        '''
+        """
         # data_new = dict()
         # data_new[unicode('description')] = unicode(description)
         # data_new[unicode('relation')] = unicode(relation)
@@ -184,14 +194,14 @@ class ARFF(object):
 
     @staticmethod
     def append(data1, data2):
-        '''
+        """
         Appends contents of ARFF data dictionary 'data2' to the contents
         of data dictionary 'data1'. Obviously, the attributes and types
         must correspond exactly.
         :param data1: Base data dictionary.
         :param data2: Dictionary to append
         :return: Updated dictionary
-        '''
+        """
         ARFF.check_valid(data1)
         ARFF.check_valid(data2)
 
@@ -243,7 +253,7 @@ class ARFF(object):
 
     @staticmethod
     def merge(data1, data2, attribute):
-        '''
+        """
         Merges contents of dictionaries 'data1' and 'data2' based on
         the given common attribute. In this case, the number of data
         rows must be identical.
@@ -251,7 +261,7 @@ class ARFF(object):
         :param data2: Second dictionary
         :param attribute: Merge attribute
         :return: New dictionary
-        '''
+        """
         ARFF.check_valid(data1)
         ARFF.check_valid(data2)
 
@@ -304,22 +314,22 @@ class ARFF(object):
 
     @staticmethod
     def contains(data, attribute):
-        '''
+        """
         Checks whether given attribute is in data dictionary.
         :param data: Data dictionary
         :param attribute: Attribute to check
         :return: True/False
-        '''
+        """
         return ARFF.index_of(data, attribute) > -1
 
     @staticmethod
     def index_of(data, attribute):
-        '''
+        """
         Returns index of given attribute or -1 if not found.
         :param data: Data dictionary
         :param attribute: Attribute to search
         :return: Index or -1
-        '''
+        """
         for i in range(len(data['attributes'])):
             item = data['attributes'][i][0]
             if item == attribute:
@@ -328,12 +338,12 @@ class ARFF(object):
 
     @staticmethod
     def sort_by(data, attribute):
-        '''
+        """
         Sorts data by given attribute.
         :param data: ARFF data dictionary
         :param attribute: Attribute to sort by
         :return: Sorted dictionary
-        '''
+        """
         i = ARFF.index_of(data, attribute)
         if i < 0:
             raise RuntimeError('Attribute not found')
@@ -342,12 +352,12 @@ class ARFF(object):
 
     @staticmethod
     def is_valid(data):
-        '''
+        """
         Checks whether given data dictionary is valid. If not, the
         function returns False.
         :param data: Data dictionary
         :return: True/False
-        '''
+        """
         try:
             ARFF.check_valid(data)
         except RuntimeError:
@@ -356,12 +366,12 @@ class ARFF(object):
 
     @staticmethod
     def check_valid(data):
-        '''
+        """
         Checks whether given data dictionary is valid by verifying the
         presence of all items.
         :param data: Data dictionary
         :return: True/False
-        '''
+        """
         if not 'relation' in data.keys():
             raise RuntimeError('Missing relation')
         if not 'attributes' in data.keys():
