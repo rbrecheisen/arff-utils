@@ -144,9 +144,6 @@ class ARFF(object):
         :param data2: Dictionary to append
         :return: Updated dictionary
         """
-        ARFF.check_valid(data1)
-        ARFF.check_valid(data2)
-
         # Figure out which description to use. Show a warning message
         # if descriptions are different. We'll use the first one
         description = ''
@@ -204,9 +201,6 @@ class ARFF(object):
         :param attribute: Merge attribute
         :return: New dictionary
         """
-        ARFF.check_valid(data1)
-        ARFF.check_valid(data2)
-
         # Check that both data sets have the merge attribute otherwise we
         # can never match rows from one with rows from the other
         if not ARFF.contains(data1, attribute):
@@ -291,49 +285,3 @@ class ARFF(object):
             raise RuntimeError('Attribute not found')
         data['data'].sort(key=lambda tup: tup[i])
         return data
-
-    @staticmethod
-    def is_valid(data):
-        """
-        Checks whether given data dictionary is valid. If not, the
-        function returns False.
-        :param data: Data dictionary
-        :return: True/False
-        """
-        try:
-            ARFF.check_valid(data)
-        except RuntimeError:
-            return False
-        return True
-
-    @staticmethod
-    def check_valid(data):
-        """
-        Checks whether given data dictionary is valid by verifying the
-        presence of all items.
-        :param data: Data dictionary
-        :return: True/False
-        """
-        if not 'relation' in data.keys():
-            raise RuntimeError('Missing relation')
-        if not 'attributes' in data.keys():
-            raise RuntimeError('Missing attributes')
-        if not 'data' in data.keys():
-            raise RuntimeError('Missing data')
-        attributes = data['attributes']
-        if len(attributes) == 0:
-            raise RuntimeError('Zero attributes')
-        data = data['data']
-        if len(data) == 0:
-            raise RuntimeError('Zero data rows')
-        for i in range(len(data)):
-            if not len(attributes) == len(data[i]):
-                raise RuntimeError('Number of attributes != number items row ' + str(i))
-
-
-
-
-
-
-
-
