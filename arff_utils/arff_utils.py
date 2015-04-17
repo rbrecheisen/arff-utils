@@ -97,7 +97,10 @@ class ARFF(object):
                 i = ARFF.index_of(data, attribute[0])
                 max_len = 0
                 for row in data['data']:
-                    max_len = max(max_len, len(row[i]))
+                    item = row[i]
+                    if item == None:
+                        continue
+                    max_len = max(max_len, len(item))
                 attribute_type = 'a' + str(max_len)
 
             elif attribute[1].upper() == 'DATE':
