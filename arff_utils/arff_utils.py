@@ -83,12 +83,15 @@ class ARFF(object):
     def write_csv(file_name, data):
         """
         Writes ARFF data dictionary to CSV file. Note that this will
-        cause loss of attribute type information.
+        cause loss of attribute type information. The approach we take
+        here is to first convert to a Pandas data frame and then use the
+        Pandas built-in function to export to CSV.
         :param file_name: CSV file name
         :param data: Data dictionary
         :return:
         """
-        raise RuntimeError('Not implemented yet')
+        data_frame = ARFF.to_data_frame(data)
+        data_frame.to_csv(file_name, na_rep='?', header=True, index=False, sep=',')
 
     @staticmethod
     def create(relation, attributes, data, description=''):
