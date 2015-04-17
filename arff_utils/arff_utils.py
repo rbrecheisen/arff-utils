@@ -35,9 +35,11 @@ class ARFF(object):
         :param index_col: Column name to use as index
         :return: Data frame
         """
-        # Create data frame by converting first to Numpy array
-        data_array = ARFF.to_numpy(data)
-        data_frame = pd.DataFrame(data_array)
+        # Create data frame by by taking rows and attributes from 
+        # ARFF data. Data types should be automatically inferred
+        rows = data['data']
+        columns = [attribute[0] for attribute in data['attributes']]
+        data_frame = pd.DataFrame(rows, columns=columns)
 
         # If index column specified, set it
         if not index_col is None:
@@ -64,69 +66,6 @@ class ARFF(object):
             data.append(list(row))
 
         return ARFF.create(relation, attributes, data, description)
-
-    @staticmethod
-    def to_numpy(data):
-        """
-        Converts ARFF data dictionary to structured numpy array.
-        :param data: Data dictionary
-        :return: Numpy structured array
-        """
-        dtypes = []
-        attributes = data['attributes']
-
-        for attribute in attributes:
-
-            # Convert attribute name from unicode to string otherwise we get an error.
-            # Default attribute type is float64 or 'f8'
-            attribute_name = str(attribute[0])
-            attribute_type = 'f8'
-
-            if type(attribute[1]) is list:
-
-                # If attribute is list then we have a nominal attribute. Check type
-                # of its first element. If string, then get maximum length of all
-                # elements. Otherwise, assume it's a number. Boolean values will be
-                # treated as strings.
-                if type(attribute[1][0]) is unicode or type(attribute[1][0]) is str:
-                    max_len = 0
-                    for x in attribute[1]:
-                        max_len = max(max_len, len(x))
-                    attribute_type = 'a' + str(max_len)
-                else:
-                    attribute_type = 'f8'
-
-            elif attribute[1].upper() == 'REAL' or attribute[1].upper() == 'NUMERIC':
-                attribute_type = 'f8'
-            elif attribute[1].upper() == 'INTEGER':
-                attribute_type = 'i8'
-            elif attribute[1].upper() == 'STRING':
-
-                # Numpy needs to know exact length of string so we're forced to search
-                # the data values for this attribute and calculate the maximum length.
-                i = ARFF.index_of(data, attribute[0])
-                max_len = 0
-                for row in data['data']:
-                    item = row[i]
-                    if item == None:
-                        continue
-                    max_len = max(max_len, len(item))
-                attribute_type = 'a' + str(max_len)
-
-            elif attribute[1].upper() == 'DATE':
-                raise RuntimeError('DATE attributes not supported yet')
-
-            # Add dtype to list
-            dtypes.append((attribute_name, attribute_type))
-
-        # Convert lists to tuples because this is required for multi-type
-        # Numpy arrays. We can then import the array into a Pandas data frame
-        tuples = []
-        for row in data['data']:
-            tup = tuple(row)
-            tuples.append(tup)
-
-        return np.array(tuples, dtype=dtypes)
 
     @staticmethod
     def write(file_name, data):
