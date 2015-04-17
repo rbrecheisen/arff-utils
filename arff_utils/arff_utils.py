@@ -9,22 +9,30 @@ import pandas as pd
 class ARFF(object):
 
     @staticmethod
-    def read(file_name, missing='?'):
+    def read(file_name, missing=None):
         """
         Loads ARFF file into data dictionary. Missing values indicated
         by '?' are automatically converted to None. If you want some
         other value to be treated as missing, specify them in the
         missing parameter.
         :param file_name: File name
-        :param missing: Missing value expression
+        :param missing: List of missing value representations
         :return: Data dictionary
         """
         data = arff.load(open(file_name))
-        if not missing == '?':
+        if not missing == None:
             for i in range(len(data['data'])):
                 for j in range(len(data['data'][i])):
-                    if data['data'][i][j] == missing:
-                        data['data'][i][j] = None
+                    if type(missing) is str:
+                        if data['data'][i][j] == missing:
+                            data['data'][i][j] = None
+                    elif type(missing) is list:
+                        for m in missing:
+                            if data['data'][i][j] == m:
+                                data['data'][i][j] = None
+                                break
+                    else:
+                        raise RuntimeError('Invalid type missing parameter ' + str(type(missing)))
         return data
 
     @staticmethod

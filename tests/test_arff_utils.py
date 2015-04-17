@@ -46,6 +46,33 @@ class TestArffUtils(unittest.TestCase):
     	data = ARFF.read(self._iris)
     	data_frame = ARFF.to_data_frame(data)
 
+    def testMissingParameter(self):
+
+        # Read labor data without missing parameter
+        data = ARFF.read(self._labor)
+        if not data['data'][0][2] is None:
+            raise RuntimeError('Value ? not converted to None')
+
+        data = ARFF.read(self._labor, '?')
+        if not data['data'][0][2] is None:
+            raise RuntimeError('Value ? not converted to None')
+
+        data = ARFF.read(self._labor, 'good')
+        if not data['data'][0][-1] is None:
+            raise  RuntimeError('Value good not converted to None')
+
+        data = ARFF.read(self._labor, ['?', 'good'])
+        if not data['data'][0][2] is None:
+            raise RuntimeError('Value ? not converted to None')
+        if not data['data'][0][-1] is None:
+            raise  RuntimeError('Value good not converted to None')
+
+        try:
+            data = ARFF.read(self._labor, {'bla': 'bla'})
+            raise RuntimeError('Function accepts dictionary while it should not')
+        except:
+            pass
+
     def tearDown(self):
         
         # Clean up intermediate files

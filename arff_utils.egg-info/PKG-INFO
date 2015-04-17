@@ -1,0 +1,56 @@
+Metadata-Version: 1.1
+Name: arff-utils
+Version: 0.1.0
+Summary: Library for reading and writing ARFF files and converting from ARFF to Pandas or Numpy data structures
+Home-page: https://github.com/rbrecheisen/arff_utils
+Author: Ralph Brecheisen
+Author-email: ralph.brecheisen@gmail.com
+License: LGPL v3
+Description: ===============================
+        ARFF Utilities for Python
+        ===============================
+        
+        .. image:: https://badge.fury.io/py/arff_utils.png
+            :target: http://badge.fury.io/py/arff_utils
+        
+        .. image:: https://travis-ci.org/rbrecheisen/arff_utils.png?branch=master
+                :target: https://travis-ci.org/rbrecheisen/arff_utils
+        
+        .. image:: https://pypip.in/d/arff_utils/badge.png
+                :target: https://pypi.python.org/pypi/arff_utils
+        
+        
+        Library for reading and writing ARFF files and converting from ARFF to Pandas or Numpy data structures
+        
+        * Free software: LGPL v3 license
+        * Documentation: https://arff_utils.readthedocs.org.
+        
+        Features
+        --------
+        
+        * TODO
+        
+        
+        
+        
+        History
+        -------
+        
+        0.1.0 (2015-01-01)
+        ---------------------
+        
+        * First release on PyPI.
+        
+Keywords: arff_utils
+Platform: UNKNOWN
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Natural Language :: English
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Topic :: Scientific/Engineering
