@@ -310,7 +310,9 @@ class ARFF(object):
                 if value == attr_value:
                     data_rows[i][idx] = 1
 
-        return data
+        # Return both the dummy-encoded data as well as the newly
+        # created attributes
+        return data, attr_values
 
     @staticmethod
     def contains(data, attribute):
