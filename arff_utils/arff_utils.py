@@ -198,62 +198,138 @@ class ARFF(object):
         return ARFF.create(relation1, attributes1, data, description)
 
     @staticmethod
-    def merge(data1, data2, attribute):
+    def merge(data1, data2, join_by, attributes):
         """
-        Merges contents of dictionaries 'data1' and 'data2' based on
-        the given common attribute. In this case, the number of data
-        rows must be identical.
-        :param data1: First dictionary
-        :param data2: Second dictionary
-        :param attribute: Merge attribute
-        :return: New dictionary
+        Merges two data sets by appending the columns of data2 associated
+        with given attributes to data1. Rows are matched based on the
+        join_by attribute.
+        :param data1: Original data set
+        :param data2: Data set whose columns to add
+        :param join_by: Attribute for matching data rows
+        :param attributes: Attributes to add
+        :return: New data set
         """
         # Check that both data sets have the merge attribute otherwise we
         # can never match rows from one with rows from the other
-        if not ARFF.contains(data1, attribute):
-            raise RuntimeError('Attribute ' + attribute + ' missing from data1')
-        if not ARFF.contains(data2, attribute):
-            raise RuntimeError('Attribute ' + attribute + ' missing from data2')
+        if not ARFF.contains(data1, join_by):
+            raise RuntimeError('Attribute ' + join_by + ' missing from data1')
+        if not ARFF.contains(data2, join_by):
+            raise RuntimeError('Attribute ' + join_by + ' missing from data2')
 
-        # Check that both data sets have the same number of data rows
-        len1 = len(data1['data'])
-        len2 = len(data2['data'])
-        if not len1 == len2:
-            raise RuntimeError('Mismatching number of data rows (' + str(len1) + ' vs ' + str(len2) + ')')
+        # Check that data2 has the given attributes
+        for attribute in attributes:
+            if not ARFF.contains(data2, attribute):
+                raise RuntimeError('Attribute ' + attribute + ' missing from data2')
 
-        relation = data1['relation'] + '_' + data2['relation']
+        # Check that data1 does not have the given attributes
+        for attribute in attributes:
+            if ARFF.contains(data1, attribute):
+                raise RuntimeError('Attribute ' + attribute + ' already exists in data1')
 
-        attributes1 = data1['attributes']
-        attributes2 = data2['attributes']
-        attributes3 = attributes1
+        # Get index of join_by attribute in both data sets. Then, create a
+        # lookup table for data2 based on join_by attribute as key. This
+        # allows quick access to data rows of data2. If we iterate through
+        # the rows of data1, we can get the join_by attribute value using
+        # the join_idx1 index. Using the attribute value we can then lookup
+        # the corresponding data row in data2.
+        join_idx1 = ARFF.index_of(data1, join_by)
+        join_idx2 = ARFF.index_of(data2, join_by)
+        data2_lookup = {}
+        for data_row1 in data2['data']:
+            data2_lookup[data_row1[join_idx2]] = data_row1
 
-        # Figure out which attributes in data2 are not yet in data1 and add
-        # them to data1's attributes. Also, store the corresponding indexes
-        # in data2 so we can also add the corresponding data values.
-        indexes = []
-        attributes_names = [x[0] for x in attributes1]
-        for i in range(len(attributes2)):
-            attribute_name = attributes2[i][0]
-            if attributes_names.__contains__(attribute_name):
-                attribute_type = attributes2[i][1]
-                attributes3.append((attribute_name, attribute_type))
-                indexes.append(i)
+        # Get indexes associated with given attributes in data2. We need this
+        # to efficiently access specific values in the rows of data2
+        attribute_indexes = []
+        for attribute in attributes:
+            attribute_indexes.append(ARFF.index_of(data2, attribute))
 
-        # Add the data values from data2 as well
-        data_rows1 = data1['data']
-        data_rows2 = data2['data']
+        # Create new attribute set by appending the attributes of
+        # data set data2. We already checked there are no duplicates.
+        attributes_extended = data1['attributes']
+        for i in attribute_indexes:
+            attribute = data2['attributes'][i]
+            attributes_extended.append(attribute)
+
+        for attribute in attributes_extended:
+            print(attribute)
+
+        # Create new data rows by taking the original data row and
+        # appending the values corresponding to the attribute columns from
+        # data2. We can do this efficiently because of the lookup table we
+        # created earlier.
         data = []
-
-        # Create new data rows by first appending all items of data1 and
-        # then appending the selected items of data2 based on the indexes
-        # calculated previously
-        for i in range(len(data_rows1)):
-            data_row = data_rows1[i]
-            for j in indexes:
-                data_row.append(data_rows2[i][j])
+        for i in range(len(data1['data'])):
+            data_row = data1['data'][i]
+            data_row2 = data2_lookup[data_row[join_idx1]]
+            for j in attribute_indexes:
+                data_row.append(data_row2[j])
             data.append(data_row)
 
-        return ARFF.create(relation, attributes3, data)
+        return {
+            'relation': data1['relation'],
+            'attributes': attributes_extended,
+            'data': data,
+            'description': ''
+        }
+
+    # @staticmethod
+    # def merge(data1, data2, attribute):
+    #     """
+    #     Merges contents of dictionaries 'data1' and 'data2' based on
+    #     the given common attribute. In this case, the number of data
+    #     rows must be identical.
+    #     :param data1: First dictionary
+    #     :param data2: Second dictionary
+    #     :param attribute: Merge attribute
+    #     :return: New dictionary
+    #     """
+    #     # Check that both data sets have the merge attribute otherwise we
+    #     # can never match rows from one with rows from the other
+    #     if not ARFF.contains(data1, attribute):
+    #         raise RuntimeError('Attribute ' + attribute + ' missing from data1')
+    #     if not ARFF.contains(data2, attribute):
+    #         raise RuntimeError('Attribute ' + attribute + ' missing from data2')
+
+    #     # Check that both data sets have the same number of data rows
+    #     len1 = len(data1['data'])
+    #     len2 = len(data2['data'])
+    #     if not len1 == len2:
+    #         raise RuntimeError('Mismatching number of data rows (' + str(len1) + ' vs ' + str(len2) + ')')
+
+    #     relation = data1['relation'] + '_' + data2['relation']
+
+    #     attributes1 = data1['attributes']
+    #     attributes2 = data2['attributes']
+    #     attributes3 = attributes1
+
+    #     # Figure out which attributes in data2 are not yet in data1 and add
+    #     # them to data1's attributes. Also, store the corresponding indexes
+    #     # in data2 so we can also add the corresponding data values.
+    #     indexes = []
+    #     attributes_names = [x[0] for x in attributes1]
+    #     for i in range(len(attributes2)):
+    #         attribute_name = attributes2[i][0]
+    #         if attributes_names.__contains__(attribute_name):
+    #             attribute_type = attributes2[i][1]
+    #             attributes3.append((attribute_name, attribute_type))
+    #             indexes.append(i)
+
+    #     # Add the data values from data2 as well
+    #     data_rows1 = data1['data']
+    #     data_rows2 = data2['data']
+    #     data = []
+
+    #     # Create new data rows by first appending all items of data1 and
+    #     # then appending the selected items of data2 based on the indexes
+    #     # calculated previously
+    #     for i in range(len(data_rows1)):
+    #         data_row = data_rows1[i]
+    #         for j in indexes:
+    #             data_row.append(data_rows2[i][j])
+    #         data.append(data_row)
+
+    #     return ARFF.create(relation, attributes3, data)
 
     @staticmethod
     def contains(data, attribute):
@@ -292,3 +368,19 @@ class ARFF(object):
             raise RuntimeError('Attribute not found')
         data['data'].sort(key=lambda tup: tup[i])
         return data
+
+    @staticmethod
+    def is_nominal(data, attribute):
+    	"""
+    	Checks whether given attribute name corresponds to
+    	nominal attribute or not.
+    	:param data: ARFF data dictionary
+    	:param attribute: Attribute to check
+    	"""
+    	i = ARFF.index_of(data, attribute)
+    	if i < 0:
+    		raise RuntimeError('Attribute not found')
+    	attribute_value = data['attributes'][i][1]
+    	if type(attribute_value) is list:
+    		return True
+    	return False
