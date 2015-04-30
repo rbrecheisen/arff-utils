@@ -156,23 +156,8 @@ class ARFF(object):
         :param data2: Dictionary to append
         :return: Updated dictionary
         """
-        # Figure out which description to use. Show a warning message
-        # if descriptions are different. We'll use the first one
-        description = ''
-        if 'description' in data1.keys() and 'description' in data2.keys():
-            if not unicode(data1['description']) == unicode(data2['description']):
-                print('WARNING: mismatching descriptions, taking data1')
-            description = data1['description']
-        elif 'description' in data1.keys():
-            description = data1['description']
-        elif 'description' in data2.keys():
-            description = data2['description']
-
-        # Check whether relation is the same
-        relation1 = data1['relation']
-        relation2 = data2['relation']
-        if not unicode(relation1) == unicode(relation2):
-            raise RuntimeError('Mismatching relations')
+        # Use description of data1
+        description = data1['description']
 
         # Check whether we have matching attributes
         attributes1 = data1['attributes']
