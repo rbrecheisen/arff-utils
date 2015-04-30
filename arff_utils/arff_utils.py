@@ -72,7 +72,12 @@ class ARFF(object):
         for row in data_frame.to_records(index=False):
             data.append(list(row))
 
-        return ARFF.create(relation, attributes, data, description)
+        return {
+            'relation': relation,
+            'attributes': attributes,
+            'data': data,
+            'description': description
+        }
 
     @staticmethod
     def write(file_name, data):
@@ -100,46 +105,46 @@ class ARFF(object):
         data_frame = ARFF.to_data_frame(data)
         data_frame.to_csv(file_name, na_rep='?', header=True, index=False, sep=',')
 
-    @staticmethod
-    def create(relation, attributes, data, description=''):
-        """
-        Creates new ARFF data dictionary from given parameters. Note that
-        string values will be automatically converted to Unicode
-        :param relation: Relation
-        :param attributes: Attributes
-        :param data: Data rows
-        :param description: Optional description
-        :return: New data dictionary
-        """
-        # data_new = dict()
-        # data_new[unicode('description')] = unicode(description)
-        # data_new[unicode('relation')] = unicode(relation)
-        attributes_new = []
-        for i in range(len(attributes)):
-            attribute_name = unicode(attributes[i][0])
-            if type(attributes[i][1]) is list():
-                attribute_type = []
-                for j in range(len(attributes[i][1])):
-                    attribute_type.append(unicode(attributes[i][1][j]))
-            else:
-                attribute_type = unicode(attributes[i][1])
-            attributes_new.append((attribute_name, attribute_type))
-        data_new = []
-        for i in range(len(data)):
-            data_row_new = []
-            for j in range(len(data[i])):
-                if type(data[i][j]) is str:
-                    data_row_new.append(unicode(data[i][j]))
-                else:
-                    data_row_new.append(data[i][j])
-            data_new.append(data_row_new)
+    # @staticmethod
+    # def create(relation, attributes, data, description=''):
+    #     """
+    #     Creates new ARFF data dictionary from given parameters. Note that
+    #     string values will be automatically converted to Unicode
+    #     :param relation: Relation
+    #     :param attributes: Attributes
+    #     :param data: Data rows
+    #     :param description: Optional description
+    #     :return: New data dictionary
+    #     """
+    #     # data_new = dict()
+    #     # data_new[unicode('description')] = unicode(description)
+    #     # data_new[unicode('relation')] = unicode(relation)
+    #     attributes_new = []
+    #     for i in range(len(attributes)):
+    #         attribute_name = unicode(attributes[i][0])
+    #         if type(attributes[i][1]) is list():
+    #             attribute_type = []
+    #             for j in range(len(attributes[i][1])):
+    #                 attribute_type.append(unicode(attributes[i][1][j]))
+    #         else:
+    #             attribute_type = unicode(attributes[i][1])
+    #         attributes_new.append((attribute_name, attribute_type))
+    #     data_new = []
+    #     for i in range(len(data)):
+    #         data_row_new = []
+    #         for j in range(len(data[i])):
+    #             if type(data[i][j]) is str:
+    #                 data_row_new.append(unicode(data[i][j]))
+    #             else:
+    #                 data_row_new.append(data[i][j])
+    #         data_new.append(data_row_new)
 
-        return {
-            unicode('description'): unicode(description),
-            unicode('relation'): unicode(relation),
-            unicode('attributes'): attributes_new,
-            unicode('data'): data_new,
-        }
+    #     return {
+    #         unicode('description'): unicode(description),
+    #         unicode('relation'): unicode(relation),
+    #         unicode('attributes'): attributes_new,
+    #         unicode('data'): data_new,
+    #     }
 
     @staticmethod
     def append(data1, data2):
@@ -195,7 +200,12 @@ class ARFF(object):
         data.extend(data1['data'])
         data.extend(data2['data'])
 
-        return ARFF.create(relation1, attributes1, data, description)
+        return {
+            'relation': relation1,
+            'attributes': attributes1,
+            'data': data,
+            'description': description
+        }
 
     @staticmethod
     def merge(data1, data2, join_by, attributes):
