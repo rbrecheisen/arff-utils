@@ -268,63 +268,49 @@ class ARFF(object):
             'description': ''
         }
 
-    # @staticmethod
-    # def merge(data1, data2, attribute):
-    #     """
-    #     Merges contents of dictionaries 'data1' and 'data2' based on
-    #     the given common attribute. In this case, the number of data
-    #     rows must be identical.
-    #     :param data1: First dictionary
-    #     :param data2: Second dictionary
-    #     :param attribute: Merge attribute
-    #     :return: New dictionary
-    #     """
-    #     # Check that both data sets have the merge attribute otherwise we
-    #     # can never match rows from one with rows from the other
-    #     if not ARFF.contains(data1, attribute):
-    #         raise RuntimeError('Attribute ' + attribute + ' missing from data1')
-    #     if not ARFF.contains(data2, attribute):
-    #         raise RuntimeError('Attribute ' + attribute + ' missing from data2')
+    @staticmethod
+    def dummy_encode(data, attribute):
+        """
+        Applies a 1-of-k dummy encoding to the given attribute and replaces
+        the associated column with two or more dummy columns.
+        :param data: ARFF data dictionary
+        :param attribute: Nominal attribute
+        :return: Dummy encoded data dictionary
+        """
+        # Check that the attribute is actually nominal. If not, just
+        # return the data unchanged
+        if not ARFF.is_nominal(data, attribute):
+            return data
 
-    #     # Check that both data sets have the same number of data rows
-    #     len1 = len(data1['data'])
-    #     len2 = len(data2['data'])
-    #     if not len1 == len2:
-    #         raise RuntimeError('Mismatching number of data rows (' + str(len1) + ' vs ' + str(len2) + ')')
+        # Get index of given attribute. We need it when we insert
+        # additional dummy columns.
+        idx = ARFF.index_of(data, attribute)
 
-    #     relation = data1['relation'] + '_' + data2['relation']
+        # Get attribute values
+        attr_values = data['attributes'][idx][1]
 
-    #     attributes1 = data1['attributes']
-    #     attributes2 = data2['attributes']
-    #     attributes3 = attributes1
+        # Next, delete the original attribute and insert new attributes
+        # for each attribute value we encounter
+        del data['attributes'][idx]
+        for attr_value in reversed(attr_values):
+            data['attributes'].insert(idx, (attr_value, 'NUMERIC'))
 
-    #     # Figure out which attributes in data2 are not yet in data1 and add
-    #     # them to data1's attributes. Also, store the corresponding indexes
-    #     # in data2 so we can also add the corresponding data values.
-    #     indexes = []
-    #     attributes_names = [x[0] for x in attributes1]
-    #     for i in range(len(attributes2)):
-    #         attribute_name = attributes2[i][0]
-    #         if attributes_names.__contains__(attribute_name):
-    #             attribute_type = attributes2[i][1]
-    #             attributes3.append((attribute_name, attribute_type))
-    #             indexes.append(i)
+        # Insert dummy values into each data row depending on its
+        # original value in the attribute column
+        data_rows = data['data']
+        for i in range(len(data_rows)):
+            value = data_rows[i][idx]
+            first = True
+            for attr_value in reversed(attr_values):
+                if first:
+                    data_rows[i][idx] = 0
+                    first = False
+                else:
+                    data_rows[i].insert(idx, 0)
+                if value == attr_value:
+                    data_rows[i][idx] = 1
 
-    #     # Add the data values from data2 as well
-    #     data_rows1 = data1['data']
-    #     data_rows2 = data2['data']
-    #     data = []
-
-    #     # Create new data rows by first appending all items of data1 and
-    #     # then appending the selected items of data2 based on the indexes
-    #     # calculated previously
-    #     for i in range(len(data_rows1)):
-    #         data_row = data_rows1[i]
-    #         for j in indexes:
-    #             data_row.append(data_rows2[i][j])
-    #         data.append(data_row)
-
-    #     return ARFF.create(relation, attributes3, data)
+        return data
 
     @staticmethod
     def contains(data, attribute):
