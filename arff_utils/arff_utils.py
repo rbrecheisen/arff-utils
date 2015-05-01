@@ -35,6 +35,43 @@ class ARFF(object):
         return data
 
     @staticmethod
+    def read_from_csv(file_name):
+        """
+        Loads CSV file and converts it to an ARFF data dictionary. This 
+        function assumes the following:
+        (1) First line contains a header with column names
+        (2) First column contains IDs (interpreted as string values)
+        (3) Remaining columns contain numeric values
+        :param file_name: CSV file path
+        """
+        attributes = []
+        f = open(file_name, 'r')
+        header = f.readline().strip().split(',')
+        header = [item.strip() for item in header]
+        attributes.append((header[0], 'STRING'))
+        for item in header[1:]:
+            attributes.append((item, 'NUMERIC'))
+        data = []
+        for line in f.readlines():
+            line = line.strip()
+            if line.startswith('#') or line == '':
+                continue
+            parts = line.split(',')
+            parts = [part.strip() for part in parts]
+            parts[0]  = str(parts[0])
+            parts[1:] = [float(part) for part in parts[1:]]
+            data.append(parts)
+        f.close()
+
+        return {
+            'relation': 'unknown',
+            'attributes': attributes,
+            'data': data,
+            'description': ''
+        }
+        
+
+    @staticmethod
     def to_data_frame(data, index_col=None):
         """
         Converts ARFF data dictionary to Pandas data frame.
