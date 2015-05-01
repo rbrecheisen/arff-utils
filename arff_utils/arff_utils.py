@@ -105,47 +105,6 @@ class ARFF(object):
         data_frame = ARFF.to_data_frame(data)
         data_frame.to_csv(file_name, na_rep='?', header=True, index=False, sep=',')
 
-    # @staticmethod
-    # def create(relation, attributes, data, description=''):
-    #     """
-    #     Creates new ARFF data dictionary from given parameters. Note that
-    #     string values will be automatically converted to Unicode
-    #     :param relation: Relation
-    #     :param attributes: Attributes
-    #     :param data: Data rows
-    #     :param description: Optional description
-    #     :return: New data dictionary
-    #     """
-    #     # data_new = dict()
-    #     # data_new[unicode('description')] = unicode(description)
-    #     # data_new[unicode('relation')] = unicode(relation)
-    #     attributes_new = []
-    #     for i in range(len(attributes)):
-    #         attribute_name = unicode(attributes[i][0])
-    #         if type(attributes[i][1]) is list():
-    #             attribute_type = []
-    #             for j in range(len(attributes[i][1])):
-    #                 attribute_type.append(unicode(attributes[i][1][j]))
-    #         else:
-    #             attribute_type = unicode(attributes[i][1])
-    #         attributes_new.append((attribute_name, attribute_type))
-    #     data_new = []
-    #     for i in range(len(data)):
-    #         data_row_new = []
-    #         for j in range(len(data[i])):
-    #             if type(data[i][j]) is str:
-    #                 data_row_new.append(unicode(data[i][j]))
-    #             else:
-    #                 data_row_new.append(data[i][j])
-    #         data_new.append(data_row_new)
-
-    #     return {
-    #         unicode('description'): unicode(description),
-    #         unicode('relation'): unicode(relation),
-    #         unicode('attributes'): attributes_new,
-    #         unicode('data'): data_new,
-    #     }
-
     @staticmethod
     def append(data1, data2):
         """
@@ -245,9 +204,6 @@ class ARFF(object):
         for i in attribute_indexes:
             attribute = data2['attributes'][i]
             attributes_extended.append(attribute)
-
-        for attribute in attributes_extended:
-            print(attribute)
 
         # Create new data rows by taking the original data row and
         # appending the values corresponding to the attribute columns from
