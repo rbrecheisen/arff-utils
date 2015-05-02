@@ -245,10 +245,14 @@ class ARFF(object):
         # Create new data rows by taking the original data row and
         # appending the values corresponding to the attribute columns from
         # data2. We can do this efficiently because of the lookup table we
-        # created earlier.
+        # created earlier. 
         data = []
         for i in range(len(data1['data'])):
             data_row = data1['data'][i]
+            key = data_row[join_idx1]
+            if not key in data2_lookup:
+            	print('WARNING: row with id {} not present in data2'.format(key))
+            	continue
             data_row2 = data2_lookup[data_row[join_idx1]]
             for j in attribute_indexes:
                 data_row.append(data_row2[j])
