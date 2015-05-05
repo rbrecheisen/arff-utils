@@ -336,6 +336,44 @@ class ARFF(object):
         return -1
 
     @staticmethod
+    def type_of(data, attribute):
+        """
+        Returns type of given attribute or None if attribute is
+        of nominal type. In that case, use labels_of()
+        :param data: Data dictionary
+        :param attribute: Attribute to return type of
+        :return: Attribute type
+        """
+        i = ARFF.index_of(data, attribute)
+        if i < 0:
+            return None
+        attribute_value = data['attributes'][i][1]
+        if isinstance(attribute_value, list):
+            print('WARNING: attribute value is nominal')
+            return None
+        else:
+            return attribute_value
+
+    @staticmethod
+    def labels_of(data, attribute):
+        """
+        Returns labels of given nominal attribute or None if
+        attribute is not of nominal type.
+        :param data: Data dictionary
+        :param attribute: Attribute to return labels of
+        :return: Labels
+        """
+        i = ARFF.index_of(data, attribute)
+        if i < 0:
+            return None
+        attribute_values = data['attributes'][i][1]
+        if not isinstance(attribute_values, list):
+            print('WARNING: attribute value is not of type nominal')
+            return None        
+        else:
+            return attribute_values
+
+    @staticmethod
     def sort_by(data, attribute):
         """
         Sorts data by given attribute.
