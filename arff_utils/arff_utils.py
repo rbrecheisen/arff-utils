@@ -20,7 +20,7 @@ class ARFF(object):
         :return: Data dictionary
         """
         data = arff.load(open(file_name))
-        if not missing == None:
+        if missing is not None:
             for i in range(len(data['data'])):
                 for j in range(len(data['data'][i])):
                     if type(missing) is str:
@@ -58,7 +58,7 @@ class ARFF(object):
                 continue
             parts = line.split(',')
             parts = [part.strip() for part in parts]
-            parts[0]  = str(parts[0])
+            parts[0] = str(parts[0])
             parts[1:] = [float(part) for part in parts[1:]]
             data.append(parts)
         f.close()
@@ -83,11 +83,22 @@ class ARFF(object):
         # ARFF data. Data types should be automatically inferred
         rows = data['data']
         columns = [attribute[0] for attribute in data['attributes']]
+
+        # Get categorical-type columns
+        categoricals = []
+        for attribute in data['attributes']:
+            column = attribute[0]
+            if type(attribute[1]) is list:
+                categoricals.append(column)
+
+        # Create data frame from ARFF dictionary
         data_frame = pd.DataFrame(rows, columns=columns)
+        for categorical in categoricals:
+            data_frame[categorical] = data_frame[categorical].astype('category')
 
         # If index column specified, set it
-        if not index_col is None:
-            if not index_col in data_frame.columns:
+        if index_col is not None:
+            if index_col not in data_frame.columns:
                 raise RuntimeError('Index column ' + index_col + ' not found')
             data_frame.set_index(index_col, drop=True, inplace=True, verify_integrity=True)
 
@@ -115,6 +126,41 @@ class ARFF(object):
             'data': data,
             'description': description
         }
+
+    @staticmethod
+    def from_data_frame(relation, data_frame):
+        """
+        Converts Pandas data frame to ARFF dictionary. Attribute types are
+        automatically inferred.
+        :param relation: Relation name
+        :param data_frame: Data frame
+        :return: ARFF data dictionary
+        """
+        attributes = []
+        for name in data_frame.columns:
+            column = data_frame[name]
+            if column.dtype is np.dtype('int') or column.dtype is np.dtype('float'):
+                attributes.append((name, 'NUMERIC'))
+            elif column.dtype is np.dtype('object'):
+                attributes.append((name, 'STRING'))
+            elif column.dtype.name is 'category':
+                attributes.append((name, list(column.cat.categories)))
+        data = []
+        for row in data_frame.to_records(index=False):
+            data.append(list(row))
+
+        return {
+            'relation': relation,
+            'attributes': attributes,
+            'data': data,
+            'description': 'Converted from Pandas data frame'
+        }
+
+    @staticmethod
+    def test():
+        data = ARFF.to_data_frame(
+            ARFF.read('/Users/Ralph/datasets/pyminer/features.arff'))
+        ARFF.from_data_frame(data)
 
     @staticmethod
     def write(file_name, data):
@@ -172,9 +218,12 @@ class ARFF(object):
             if type(attribute1[1]) is list and type(attribute2[1]) is list:
                 for j in range(len(attribute1[1])):
                     if not unicode(attribute1[1][j]) == unicode(attribute2[1][j]):
-                        raise RuntimeError('Mismatching nominal values at (' + str(i) + ',' + str(j) + ') (' + unicode(attribute1[1][j]) + ' vs ' + unicode(attribute2[1][j]) + ')')
+                        raise RuntimeError('Mismatching nominal values at ('
+                                           + str(i) + ',' + str(j) + ') (' + unicode(attribute1[1][j]) + ' vs ' +
+                                           unicode(attribute2[1][j]) + ')')
             elif not unicode(attribute1[1]) == unicode(attribute2[1]):
-                raise RuntimeError('Mismatching attribute types (' + unicode(attribute1[1]) + ' vs ' +  unicode(attribute2[1]) + ')')
+                raise RuntimeError('Mismatching attribute types (' +
+                                   unicode(attribute1[1]) + ' vs ' + unicode(attribute2[1]) + ')')
 
         # Append rows of data2 to rows of data1
         data = []
@@ -250,9 +299,9 @@ class ARFF(object):
         for i in range(len(data1['data'])):
             data_row = data1['data'][i]
             key = data_row[join_idx1]
-            if not key in data2_lookup:
-            	print('WARNING: row with id {} not present in data2'.format(key))
-            	continue
+            if key not in data2_lookup:
+                print('WARNING: row with id {} not present in data2'.format(key))
+                continue
             data_row2 = data2_lookup[data_row[join_idx1]]
             for j in attribute_indexes:
                 data_row.append(data_row2[j])
@@ -389,16 +438,21 @@ class ARFF(object):
 
     @staticmethod
     def is_nominal(data, attribute):
-    	"""
-    	Checks whether given attribute name corresponds to
-    	nominal attribute or not.
-    	:param data: ARFF data dictionary
-    	:param attribute: Attribute to check
-    	"""
-    	i = ARFF.index_of(data, attribute)
-    	if i < 0:
-    		raise RuntimeError('Attribute not found')
-    	attribute_value = data['attributes'][i][1]
-    	if type(attribute_value) is list:
-    		return True
-    	return False
+        """
+        Checks whether given attribute name corresponds to
+        nominal attribute or not.
+        :param data: ARFF data dictionary
+        :param attribute: Attribute to check
+        """
+        i = ARFF.index_of(data, attribute)
+        if i < 0:
+            raise RuntimeError('Attribute not found')
+        attribute_value = data['attributes'][i][1]
+        if type(attribute_value) is list:
+            return True
+        return False
+
+
+if __name__ == '__main__':
+
+    ARFF.test()
