@@ -318,10 +318,12 @@ class ARFF(object):
     def dummy_encode(data, attribute):
         """
         Applies a 1-of-k dummy encoding to the given attribute and replaces
-        the associated column with two or more dummy columns.
+        the associated column with two or more dummy columns. Note that if
+        there are only two levels, they are just converted to zero and one
+        instead of creating new columns for them.
         :param data: ARFF data dictionary
         :param attribute: Nominal attribute
-        :return: Dummy encoded data dictionary
+        :return: Dummy encoded data dictionary, new attributes
         """
         # Check that the attribute is actually nominal. If not, just
         # return the data unchanged
@@ -335,30 +337,43 @@ class ARFF(object):
         # Get attribute values
         attr_values = data['attributes'][idx][1]
 
-        # Next, delete the original attribute and insert new attributes
-        # for each attribute value we encounter
-        del data['attributes'][idx]
-        for attr_value in reversed(attr_values):
-            data['attributes'].insert(idx, (attr_value, 'NUMERIC'))
-
-        # Insert dummy values into each data row depending on its
-        # original value in the attribute column
-        data_rows = data['data']
-        for i in range(len(data_rows)):
-            value = data_rows[i][idx]
-            first = True
-            for attr_value in reversed(attr_values):
-                if first:
+        if len(attr_values) == 2:
+            # If we're dealing with a binominal attribute there's no need
+            # to split it up in separate dummy columns. Just convert the
+            # values to 0's and 1's.
+            data['attributes'][idx] = (attribute, 'NUMERIC')
+            data_rows = data['data']
+            for i in range(len(data_rows)):
+                value = data_rows[i][idx]
+                if value == attr_values[0]:
                     data_rows[i][idx] = 0
-                    first = False
                 else:
-                    data_rows[i].insert(idx, 0)
-                if value == attr_value:
                     data_rows[i][idx] = 1
 
-        # Return both the dummy-encoded data as well as the newly
-        # created attributes
-        return data, attr_values
+            return data, [attribute]
+        else:
+            # Next, delete the original attribute and insert new attributes
+            # for each attribute value we encounter
+            del data['attributes'][idx]
+            for attr_value in reversed(attr_values):
+                data['attributes'].insert(idx, (attr_value, 'NUMERIC'))
+
+            # Insert dummy values into each data row depending on its
+            # original value in the attribute column
+            data_rows = data['data']
+            for i in range(len(data_rows)):
+                value = data_rows[i][idx]
+                first = True
+                for attr_value in reversed(attr_values):
+                    if first:
+                        data_rows[i][idx] = 0
+                        first = False
+                    else:
+                        data_rows[i].insert(idx, 0)
+                    if value == attr_value:
+                        data_rows[i][idx] = 1
+
+            return data, attr_values
 
     @staticmethod
     def contains(data, attribute):
